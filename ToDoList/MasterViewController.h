@@ -7,9 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ToDo.h"
+#import "TLCoreDataStack.h"
+#import "AddItemViewController.h"
+#import "addItemToTableVCDelegate.h"
+#import "ToDoItemTableViewCell.h"
+#import "AddItemTableViewController.h"
 
-@interface MasterViewController : UITableViewController
+@interface MasterViewController : UITableViewController <addItemToTableVCDelegate, ToDoItemTableViewCellDelegate>
 
+
+
+-(void)addItemtoListItemArray:(ToDo *)newItem;
 
 @end
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6252" systemVersion="14A389" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="ToDo" representedClassName="ToDo" syncable="YES">
+        <attribute name="completionDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="isCompleted" optional="YES" attributeType="Boolean" syncable="YES">
+            <userInfo>
+                <entry key="NO" value="0"/>
+                <entry key="YES" value="1"/>
+            </userInfo>
+        </attribute>
+        <attribute name="itemDesc" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="itemTitle" attributeType="String" syncable="YES"/>
+        <attribute name="priority" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="ToDo" positionX="-63" positionY="-18" width="128" height="118"/>
+    </elements>
+</model>
