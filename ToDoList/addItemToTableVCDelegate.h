@@ -11,7 +11,7 @@
 
 @protocol addItemToTableVCDelegate <NSObject>
 
-//-(void)addItemtoListItemArray:(ToDo *)newItem ;
+-(void)addItemtoListItemArray:(ToDo *)newItem ;
 -(void)updateTable;
 
 @end

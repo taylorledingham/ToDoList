@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		902865F719FB017900A9B012 /* AddItemTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 902865F619FB017900A9B012 /* AddItemTableViewController.m */; };
-		902865FA19FC197C00A9B012 /* ToDoModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 902865F819FC197C00A9B012 /* ToDoModel.xcdatamodeld */; };
 		902865FD19FC22D300A9B012 /* TLCoreDataStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 902865FC19FC22D300A9B012 /* TLCoreDataStack.m */; };
 		902865FF19FC268200A9B012 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 902865FE19FC268200A9B012 /* CoreData.framework */; };
 		9028660219FC271B00A9B012 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9028660119FC271B00A9B012 /* CoreGraphics.framework */; };
@@ -39,11 +38,11 @@
 /* Begin PBXFileReference section */
 		902865F519FB017900A9B012 /* AddItemTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddItemTableViewController.h; sourceTree = "<group>"; };
 		902865F619FB017900A9B012 /* AddItemTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AddItemTableViewController.m; sourceTree = "<group>"; };
-		902865F919FC197C00A9B012 /* ToDoModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ToDoModel.xcdatamodel; sourceTree = "<group>"; };
 		902865FB19FC22D300A9B012 /* TLCoreDataStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TLCoreDataStack.h; sourceTree = "<group>"; };
 		902865FC19FC22D300A9B012 /* TLCoreDataStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TLCoreDataStack.m; sourceTree = "<group>"; };
 		902865FE19FC268200A9B012 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		9028660119FC271B00A9B012 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		9028660619FEF60C00A9B012 /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		903AC88B19F8576E00A01EE7 /* ToDoItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ToDoItemTableViewCell.h; path = ../ToDoItemTableViewCell.h; sourceTree = "<group>"; };
 		903AC88C19F8576E00A01EE7 /* ToDoItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ToDoItemTableViewCell.m; path = ../ToDoItemTableViewCell.m; sourceTree = "<group>"; };
 		9069FD8919F833670058BC72 /* view2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = view2.png; sourceTree = "<group>"; };
@@ -126,7 +125,6 @@
 				90DFB1BB19F80CA400AB0010 /* MasterViewController.m */,
 				902865FB19FC22D300A9B012 /* TLCoreDataStack.h */,
 				902865FC19FC22D300A9B012 /* TLCoreDataStack.m */,
-				902865F819FC197C00A9B012 /* ToDoModel.xcdatamodeld */,
 				90DFB1BD19F80CA400AB0010 /* DetailViewController.h */,
 				90DFB1BE19F80CA400AB0010 /* DetailViewController.m */,
 				90DFB1C019F80CA400AB0010 /* Main.storyboard */,
@@ -149,6 +147,7 @@
 		90DFB1B319F80CA400AB0010 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9028660619FEF60C00A9B012 /* PrefixHeader.pch */,
 				90DFB1B419F80CA400AB0010 /* Info.plist */,
 				90DFB1B519F80CA400AB0010 /* main.m */,
 			);
@@ -283,7 +282,6 @@
 				90DFB1B619F80CA400AB0010 /* main.m in Sources */,
 				902865F719FB017900A9B012 /* AddItemTableViewController.m in Sources */,
 				90DFB1BF19F80CA400AB0010 /* DetailViewController.m in Sources */,
-				902865FA19FC197C00A9B012 /* ToDoModel.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,6 +345,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -388,6 +387,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -407,6 +407,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
 				INFOPLIST_FILE = ToDoList/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -421,6 +422,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
 				INFOPLIST_FILE = ToDoList/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -494,19 +496,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		902865F819FC197C00A9B012 /* ToDoModel.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				902865F919FC197C00A9B012 /* ToDoModel.xcdatamodel */,
-			);
-			currentVersion = 902865F919FC197C00A9B012 /* ToDoModel.xcdatamodel */;
-			path = ToDoModel.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 90DFB1A819F80CA400AB0010 /* Project object */;
 }

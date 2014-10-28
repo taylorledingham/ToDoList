@@ -9,17 +9,16 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@interface ToDo : NSManagedObject
+@interface ToDo : NSObject <NSCoding>
 
-@property (retain, nonatomic) NSString *itemTitle;
-@property (retain, nonatomic) NSString *itemDesc;
-@property (nonatomic) float priority;
-@property (nonatomic) BOOL isCompleted;
-@property (nonatomic) NSDate *completionDate;
-
-@property (nonatomic, readonly) NSString *sectionName;
+@property (copy, nonatomic) NSString *itemTitle;
+@property (copy, nonatomic) NSString *itemDesc;
+@property (copy, nonatomic) NSNumber * priority;
+@property (copy, nonatomic) NSNumber* isCompleted;
+@property (copy, nonatomic) NSDate *completionDate;
 
 
-//- (instancetype)initWithTitle:(NSString *)title andDesc:(NSString *)desc andPriority:(int)priority andDate:(NSDate *)date;
+
+- (instancetype)initWithTitle:(NSString *)title andDesc:(NSString *)desc andPriority:(NSNumber *)priority andDate:(NSDate *)date;
 
 @end

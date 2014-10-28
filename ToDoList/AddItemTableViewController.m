@@ -8,6 +8,13 @@
 
 #import "AddItemTableViewController.h"
 
+#define titleKey      @"Title"
+#define descKey       @"Desc"
+#define priorityKey   @"Priority"
+#define dateKey       @"completionDate"
+#define isCompleteKey    @"isComplete"
+
+
 @interface AddItemTableViewController ()
 
 @end
@@ -18,6 +25,8 @@
     UITapGestureRecognizer *cellTapRecognizer;
     BOOL isCellExpanded;
     NSDateFormatter *dateFormat;
+    NSString *cacheDirectory;
+    NSString *filePath;
 }
 
 - (void)viewDidLoad {
@@ -28,23 +37,47 @@
     self.itemDatePicker.hidden = YES;
     dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat:@"MMM. dd 'at' hh:mm"];
+    cacheDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    filePath = [cacheDirectory stringByAppendingPathComponent:@"entryData"];
+    
+    self.navigationController.delegate = self;
 
     
     //[self.tableView registerClass:[UITableViewCell class] forCellWithReuseIdentifier:@"DateCell"];
     
-    if(self.entry != nil && self.isEditing == YES){
+    if( self.isEditing == YES){
         [self setTableForEditing];
     }
-    else if(self.displayOnly == YES && self.entry != nil){
+    else if(self.displayOnly == YES ){
         [self setTableForDisplayOnly];
     }
     else {
  
-    NSDate *currDate = [NSDate date];
-    NSString *theDate = [dateFormat stringFromDate:currDate];
-    self.dateValueLabel.text = [NSString stringWithFormat:@"%@", theDate];
+//    NSDate *currDate = [NSDate date];
+//    NSString *theDate = [dateFormat stringFromDate:currDate];
+//    self.dateValueLabel.text = [NSString stringWithFormat:@"%@", theDate];
+        self.entry = [[ToDo alloc]init];
+        self.entry.completionDate = [NSDate date];
+        [self setTableForAdding];
+        [self loadFromCache];
     }
 
+}
+
+-(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+    if(viewController != self){
+        NSLog(@"go back");
+        if(self.displayOnly != YES){
+            [self removeFromCache];
+        }
+    }
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    UINavigationItem *navItem = self.navigationItem;
+    UIBarButtonItem *backbutton = navItem.backBarButtonItem;
+    
+    [backbutton setAction:@selector(goBackToMasterView)];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -52,12 +85,24 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(void)setTableForAdding {
+    
+    self.titleTextField.text = [[NSUserDefaults standardUserDefaults] objectForKey:titleKey];
+    self.descTextView.text = [[NSUserDefaults standardUserDefaults] objectForKey:descKey];
+    self.priorityNumberLabel.text = [NSString stringWithFormat:@" %@", [[NSUserDefaults standardUserDefaults] objectForKey:priorityKey]];
+    self.prioritySlider.value = [[[NSUserDefaults standardUserDefaults] objectForKey:priorityKey] floatValue];
+    NSString *toDoDate = [dateFormat stringFromDate:[[NSUserDefaults standardUserDefaults] objectForKey:dateKey]];
+    self.dateValueLabel.text = toDoDate;
+    self.itemDatePicker.date = [[NSUserDefaults standardUserDefaults] objectForKey:dateKey];
+    
+}
+
 -(void)setTableForEditing {
     
     self.titleTextField.text = self.entry.itemTitle;
     self.descTextView.text = self.entry.itemDesc;
-    self.priorityNumberLabel.text = [NSString stringWithFormat:@" %.0f", self.entry.priority];
-    self.prioritySlider.value = self.entry.priority;
+    self.priorityNumberLabel.text = [NSString stringWithFormat:@" %@", self.entry.priority];
+    self.prioritySlider.value = [self.entry.priority floatValue];
     NSString *toDoDate = [dateFormat stringFromDate:self.entry.completionDate];
     self.dateValueLabel.text = toDoDate;
     self.itemDatePicker.date = self.entry.completionDate;
@@ -77,11 +122,9 @@
 - (void)updateToDoEntry {
     self.entry.itemTitle = self.titleTextField.text;
     self.entry.itemDesc = self.descTextView.text;
-    self.entry.priority = self.prioritySlider.value;
+    self.entry.priority = [NSNumber numberWithFloat: self.prioritySlider.value];
     self.entry.completionDate = self.itemDatePicker.date;
     
-    TLCoreDataStack *coreDataStack = [TLCoreDataStack defaultStack];
-    [coreDataStack saveContext];
 }
 
 
@@ -118,21 +161,18 @@
 
 -(void) textFieldDidEndEditing:(UITextField *)textField {
     
-    
+    self.entry.itemTitle = textField.text;
+    [self saveToCache];
     [textField resignFirstResponder];
     
 }
-//
-//- (BOOL)textView:(UITextView *)textView
-//shouldChangeTextInRange:(NSRange)range
-// replacementText:(NSString *)text
-//{
-//    if ([text isEqualToString:@"\n"])
-//    {
-//        [textView resignFirstResponder];
-//    }
-//    return YES;
-//}
+
+-(void) textViewDidEndEditing:(UITextView *)textView {
+    self.entry.itemDesc = textView.text;
+    [self saveToCache];
+    [textView resignFirstResponder];
+}
+
 
 -(void)didTapAnywhere: (UITapGestureRecognizer*) recognizer {
     [self.descTextView resignFirstResponder];
@@ -159,17 +199,11 @@
     if(indexPath.section == 1 && indexPath.row == 0){
         
         isCellExpanded = YES;
-        //NSIndexPath *datePickerPath = [[NSIndexPath alloc]initWithIndex:<#(NSUInteger)#>;
-        
         UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        
         cellTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                     action:@selector(didTapOnDateCell:)];
         [cell addGestureRecognizer:cellTapRecognizer];
-
-        
         self.itemDatePicker.hidden = NO;
-        
     }
     
     [self.tableView beginUpdates];
@@ -182,7 +216,6 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
 
-    
     if (indexPath.section == 0)
     {
         return 50.0;
@@ -199,7 +232,6 @@
     
     else if (indexPath.section == 2){
         return 85;
-        
     }
     
     else if(indexPath.section == 3){
@@ -209,49 +241,7 @@
 }
 
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 -(void)didTapOnDateCell:(UITapGestureRecognizer *)tap {
     
@@ -261,7 +251,6 @@
     isCellExpanded = NO;
     
     [tap.view removeGestureRecognizer:tap];
-    
    [self.tableView beginUpdates];
    [self.tableView endUpdates];
     }
@@ -271,12 +260,26 @@
 - (IBAction)priorityValueDidChange:(id)sender {
     
     self.priorityNumberLabel.text = [NSString stringWithFormat:@"%.0f", self.prioritySlider.value];
+    self.entry.priority = [NSNumber numberWithFloat:self.prioritySlider.value];
+    [self saveToCache];
+
+}
+
+- (IBAction)setAsDefaultTask:(id)sender {
+    
+    [[NSUserDefaults standardUserDefaults]setObject:self.titleTextField.text forKey:titleKey];
+    [[NSUserDefaults standardUserDefaults]setObject:self.descTextView.text forKey:descKey];
+    [[NSUserDefaults standardUserDefaults]setObject:[NSNumber numberWithFloat: self.prioritySlider.value] forKey:priorityKey];
+    [[NSUserDefaults standardUserDefaults]setObject:self.itemDatePicker.date forKey:dateKey];
+
 }
 
 - (IBAction)datePickerValueDidChange:(UIDatePicker *)sender {
     
     NSString *theDate = [dateFormat stringFromDate:sender.date];
     self.dateValueLabel.text = [NSString stringWithFormat:@"%@", theDate];
+    self.entry.completionDate = sender.date;
+    [self saveToCache];
     NSLog(@"%@",sender.date );
     
     
@@ -297,21 +300,66 @@
         
         else
         {
-        TLCoreDataStack *coreDataStack = [TLCoreDataStack defaultStack];
-        ToDo *entry = [NSEntityDescription insertNewObjectForEntityForName:@"ToDo" inManagedObjectContext:coreDataStack.managedObjectContext];
+        ToDo *entry = [[ToDo alloc]init];;
         entry.itemTitle = self.titleTextField.text;
         entry.completionDate = self.itemDatePicker.date;
         entry.itemDesc = self.descTextView.text;
-        entry.priority = self.prioritySlider.value;
-        [coreDataStack saveContext];
+        entry.priority = [NSNumber numberWithFloat: self.prioritySlider.value];
+        [self.delegate addItemtoListItemArray:entry];
         }
         
         [self.delegate updateTable];
     }
     
+    [self removeFromCache];
+    
     [self.navigationController popViewControllerAnimated:YES];
     
 }
 
+-(void)removeFromCache {
+    
+    NSFileManager *fileManager;
+    
+    fileManager = [NSFileManager defaultManager];
+    
+    if ([fileManager removeItemAtPath: filePath error: NULL]  == YES)
+        NSLog (@"Remove successful");
+    else
+        NSLog (@"Remove failed");
+
+    
+}
+
+-(void)loadFromCache {
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+        ToDo * savedData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        if (savedData){
+            self.entry = savedData;
+            self.titleTextField.text = self.entry.itemTitle;
+            self.descTextView.text = self.entry.itemDesc;
+            self.priorityNumberLabel.text = [NSString stringWithFormat:@" %@", self.entry.priority];
+            self.prioritySlider.value = [self.entry.priority floatValue];
+            NSString *toDoDate = [dateFormat stringFromDate:self.entry.completionDate];
+            self.dateValueLabel.text = toDoDate;
+            if(self.entry.completionDate != nil){
+            self.itemDatePicker.date = self.entry.completionDate;
+            }
+            
+        }
+    }
+}
+
+-(void)saveToCache {
+    NSLog(@"saved entry %@", self.entry.description);
+   [NSKeyedArchiver archiveRootObject:self.entry toFile:filePath];
+}
+
+-(void)goBackToMasterView{
+    NSLog(@"back to master view");
+    //[self removeFromCache];
+}
 
 @end

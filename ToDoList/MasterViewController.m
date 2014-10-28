@@ -9,7 +9,14 @@
 #import "MasterViewController.h"
 #import "DetailViewController.h"
 
-@interface MasterViewController () <NSFetchedResultsControllerDelegate>
+#define titleKey      @"Title"
+#define descKey       @"Desc"
+#define priorityKey   @"Priority"
+#define dateKey       @"completionDate"
+#define isCompleteKey    @"isComplete"
+
+
+@interface MasterViewController ()
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 
@@ -22,7 +29,9 @@
 @implementation MasterViewController {
      UIGestureRecognizer *tapGesture;
     NSDateFormatter *dateFormat;
-
+    NSString *filePath;
+    AppDelegate *appDelegate;
+    NSURL *urlWithPath;
 }
 
 - (void)awakeFromNib {
@@ -33,10 +42,35 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+   //self.toListItems = ((AppDelegate *)[[UIApplication sharedApplication].delegate).toDoItems;
+    appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if(appDelegate.toDoItems==nil)
+    {
+        self.toListItems = [[NSMutableArray alloc]init];
+    }
+    else {
+        self.toListItems = appDelegate.toDoItems ;
 
+    }
+    
+    NSDate *currDate = [NSDate date];
+    ToDo *item1 = [[ToDo alloc]initWithTitle:@"To Do Task Name" andDesc:@"Task Description" andPriority:@2.0 andDate:currDate];
+    
+    
+    //ToDo *item2 = [[ToDo alloc]initWithTitle:@"go to bank" andDesc:@"go to the bank" andPriority:3.0 andDate:currDate];
+    
+    
+    //self.toListItems = [[NSMutableArray alloc]initWithObjects:item1, item2, nil];
     self.deletedItems = [[NSMutableArray alloc]init];
     
-    self.navigationItem.leftBarButtonItem = self.editButtonItem;
+    [[NSUserDefaults standardUserDefaults]setObject:item1.itemTitle forKey:titleKey];
+    [[NSUserDefaults standardUserDefaults]setObject:item1.itemDesc forKey:descKey];
+    [[NSUserDefaults standardUserDefaults]setObject:item1.priority forKey:priorityKey];
+    [[NSUserDefaults standardUserDefaults]setObject:item1.isCompleted forKey:isCompleteKey];
+    [[NSUserDefaults standardUserDefaults]setObject:item1.completionDate forKey:dateKey];
+    
+    
+   self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.tableView.allowsSelectionDuringEditing = YES;
     
     [self.fetchedResultsController performFetch:nil];
@@ -70,7 +104,7 @@
     if ([[segue identifier] isEqualToString:@"showDetailItem"]) {
        
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        ToDo *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        ToDo *object = [self.toListItems objectAtIndex:indexPath.row];
         
         AddItemTableViewController *detailVC = segue.destinationViewController;
         detailVC.displayOnly = YES;
@@ -104,13 +138,12 @@
 #pragma mark - Table View
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.fetchedResultsController.sections.count;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    id <NSFetchedResultsSectionInfo> sectionInfo = [self.fetchedResultsController sections][section];
-    return [sectionInfo numberOfObjects];}
-
+    return self.toListItems.count;
+}
 - (ToDoItemTableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     ToDoItemTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
@@ -125,10 +158,10 @@
 
     }
     
-    ToDo *entry = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    ToDo *entry = self.toListItems[indexPath.row];
     cell.itemTitle.text  = entry.itemTitle;
     cell.itemDesc.text = entry.itemDesc;
-    cell.itemPriority.text =[ NSString stringWithFormat:@"%.0f", entry.priority ] ;
+    cell.itemPriority.text =[ NSString stringWithFormat:@"%.0f", [entry.priority floatValue]] ;
         NSString *theDate = [dateFormat stringFromDate:entry.completionDate];
     cell.completionDateLabel.text = [NSString stringWithFormat:@"%@", theDate];
     
@@ -154,7 +187,7 @@
     
     if(self.tableView.editing == YES){
     
-    ToDo *curr = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        ToDo *curr = [self.toListItems objectAtIndex:indexPath.row];
     
     [self performSegueWithIdentifier:@"addItem" sender:curr];
     }
@@ -187,22 +220,18 @@
     if (motion == UIEventSubtypeMotionShake )
     {
         // delete strike through cells
-        TLCoreDataStack *coreDataStack = [TLCoreDataStack defaultStack];
         NSPredicate *deletedItems = [NSPredicate predicateWithFormat:@"isCompleted == YES"];
-        NSFetchRequest *request = [self entryListFetchRequest];
-        [request setPredicate:deletedItems];
-        NSError *error = nil;
         
-        NSArray *fetchedObjects = [coreDataStack.managedObjectContext executeFetchRequest:request error:&error];
-
-        for( NSManagedObject * entry in fetchedObjects) {
+        NSArray *fetchedObjects = [self.toListItems filteredArrayUsingPredicate:deletedItems];
+        for( ToDo * entry in fetchedObjects) {
             
-            [[coreDataStack managedObjectContext] deleteObject:entry];
+            [self.toListItems removeObject:entry];
         }
         
-        [coreDataStack saveContext];
         [self.tableView reloadData];
-        
+        appDelegate.toDoItems = self.toListItems;
+        [appDelegate saveData];
+
 
     }
 }
@@ -216,14 +245,10 @@
     
     NSIndexPath *swipedIndexPath = [self.tableView indexPathForCell:cell];
     
-    //ToDo *curr = [self.toListItems objectAtIndex:swipedIndexPath.row];
+    ToDo *curr = [self.toListItems objectAtIndex:swipedIndexPath.row];
     
     
-    ToDo *curr = [self.fetchedResultsController objectAtIndexPath:swipedIndexPath];
-    curr.isCompleted = YES;
-    TLCoreDataStack *coreDataStack = [TLCoreDataStack defaultStack];
-    [[coreDataStack managedObjectContext] updatedObjects];
-    [coreDataStack saveContext];
+    curr.isCompleted = [NSNumber numberWithBool:YES];
 
     
     NSDictionary* attributes = @{
@@ -241,6 +266,20 @@
     
 }
 
+- (IBAction)saveItemsList:(id)sender {
+    
+    [NSKeyedArchiver archiveRootObject:self.toListItems toFile:filePath];
+}
+
+-(void)addItemtoListItemArray:(ToDo *)newItem{
+    
+    [self.toListItems addObject:newItem];
+    appDelegate.toDoItems = self.toListItems;
+    [appDelegate saveData];
+    [self.tableView reloadData];
+    
+}
+
 
 -(void) didPressCheckmarkButton:(ToDoItemTableViewCell *)cell {
     
@@ -249,61 +288,6 @@
     
 }
 
-- (NSFetchedResultsController *)fetchedResultsController {
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
-    
-    TLCoreDataStack *coreDataStack = [TLCoreDataStack defaultStack];
-    NSFetchRequest *fetchRequest = [self entryListFetchRequest];
-    
-    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:coreDataStack.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
-    _fetchedResultsController.delegate = self;
-    
-    return _fetchedResultsController;
-}
-
-
--(NSFetchRequest *)entryListFetchRequest {
-    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"ToDo"];
-    
-    fetchRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"priority" ascending:NO]];
-    
-    return fetchRequest;
-}
-
-
-- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    [self.tableView beginUpdates];
-}
-
-- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
-    switch (type) {
-        case NSFetchedResultsChangeInsert:
-            [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeDelete:
-            [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeUpdate:
-            //[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-    }
-}
-
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id<NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-    switch (type) {
-        case NSFetchedResultsChangeInsert:
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeDelete:
-            [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-}
-
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    [self.tableView endUpdates];
-}
 
 
 

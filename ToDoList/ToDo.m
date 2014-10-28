@@ -8,17 +8,41 @@
 
 #import "ToDo.h"
 
+#define titleKey      @"Title"
+#define descKey       @"Desc"
+#define priorityKey   @"Priority"
+#define dateKey       @"completionDate"
+
 @implementation ToDo
 
-@dynamic itemTitle;
-@dynamic itemDesc;
-@dynamic isCompleted;
-@dynamic priority;
-@dynamic completionDate;
 
-- (NSString *)sectionName {
+- (instancetype)initWithTitle:(NSString *)title andDesc:(NSString *)desc andPriority:(NSNumber *)priority andDate:(NSDate *)date
+{
     
-    return self.itemTitle;
+    self = [self init];
+    if (self) {
+        self.itemTitle = title;
+        self.itemDesc = desc;
+        self.priority = priority;
+        self.completionDate = date;
+    }
+    return self;
+}
+
+- (void) encodeWithCoder:(NSCoder *)encoder {
+    [encoder encodeObject:self.itemTitle forKey:titleKey];
+    [encoder encodeObject:self.itemDesc forKey:descKey];
+    [encoder encodeObject:self.priority forKey:priorityKey];
+    [encoder encodeObject:self.completionDate forKey:dateKey];
+}
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    self = [self init];
+    self.itemTitle = [decoder decodeObjectForKey:titleKey];
+    self.itemDesc = [decoder decodeObjectForKey:descKey];
+    self.completionDate = [decoder decodeObjectForKey:dateKey];
+    self.priority = [decoder decodeObjectForKey:priorityKey];
+    return self;
 }
 
 

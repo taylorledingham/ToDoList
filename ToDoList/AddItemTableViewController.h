@@ -14,7 +14,7 @@
 @class ToDo;
 
 
-@interface AddItemTableViewController : UITableViewController <UITextFieldDelegate, UITextViewDelegate>
+@interface AddItemTableViewController : UITableViewController <UITextFieldDelegate, UITextViewDelegate, UINavigationControllerDelegate>
 
 
 @property (weak, nonatomic) id <addItemToTableVCDelegate> delegate;
@@ -33,6 +33,7 @@
 - (IBAction)doneAddItem:(id)sender;
 
 - (IBAction)priorityValueDidChange:(id)sender;
+- (IBAction)setAsDefaultTask:(id)sender;
 
 //- (IBAction)addNewItem:(id)sender;
 //- (IBAction)doneAddItem:(id)sender;
